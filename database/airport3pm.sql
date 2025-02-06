@@ -2,7 +2,7 @@
 DROP DATABASE IF EXISTS student3pm_airport_db;
 -- Create database
 CREATE DATABASE student3pm_airport_db;
-USE student_airport_db;
+USE student3pm_airport_db;
 
 -- Create flights table
 CREATE TABLE flights (
