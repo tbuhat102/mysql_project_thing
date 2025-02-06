@@ -55,11 +55,11 @@ mysql -u <USER> -p < database_filename.sql
 ```
 - add in the necessary database connections to the `.env`
 
+- OPTIONAL
 - After adding your migration details, run the migration:
 ```bash
 php artisan migrate
 ```
-- OPTIONAL
 - If necessary and you need to seed the database with the test data, create a seeder:
 ```bash
 php artisan make:seeder FlightSeeder
