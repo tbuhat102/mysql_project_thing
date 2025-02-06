@@ -78,6 +78,7 @@ export default defineConfig({
 </body>
 </html>
 ```
+- run `composer install`
 
 9. Build your assets:
 ```bash
