@@ -10,13 +10,17 @@
             <thead>
                 <tr>
                 <!-- thead section -->
+                <th>Flights</th>
                 </tr>
             </thead>
             <tbody>
             <!-- start for each -->
+
+            @foreach($arriving_flights as $flight)
                     <tr>
-                        <td></td>
+                        <td>{{ $flight->flight_number }}</td>
                     </tr>
+                @endforeach
             <!-- end for each -->
             </tbody>
         </table>
