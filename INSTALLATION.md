@@ -1,21 +1,20 @@
+# How to build a airport demo laravel app with blades and tailwind
 
-1. First, create a new Laravel project:
-```bash
-composer create-project laravel/laravel your-app-name
-cd your-app-name
-```
+## Note:
+- If starting fresh this is the create command you can use...
+`composer create-project laravel/laravel airport-demo`
+`cd airport-demo`
 
 2. Install the required Node.js dependencies with npm:
-```bash
-npm install
-```
+`npm install`
 
-3. Install Tailwind CSS v3 specifically (along with its dependencies):
-```bash
-npm install -D tailwindcss@^3 postcss@latest autoprefixer@latest
-```
+3. If Dev dependencies not already installed, Install Tailwind CSS v3 specifically (along with its dependencies):
+`npm install -D tailwindcss@^3 postcss@latest autoprefixer@latest`
 
-4. Create the tailwind.config.js file in your project root:
+4. Install Composer modules
+`composer install`
+
+5. Create the tailwind.config.js file in your project root:
 ```javascript
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -31,7 +30,7 @@ export default {
 }
 ```
 
-5. Create postcss.config.js in your project root:
+6. Create postcss.config.js in your project root:
 ```javascript
 export default {
     plugins: {
@@ -41,14 +40,14 @@ export default {
 }
 ```
 
-6. Configure your CSS. Replace the contents of resources/css/app.css with:
+7. Configure your CSS. Replace the contents of resources/css/app.css with:
 ```css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
 
-7. Make sure your vite.config.js looks like this:
+8. Make sure your vite.config.js looks like this:
 ```javascript
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
@@ -63,7 +62,7 @@ export default defineConfig({
 });
 ```
 
-8. Update your layout file (e.g., resources/views/layouts/app.blade.php) to include Vite:
+8. Update your layout file (e.g., resources/views/layouts/app.blade.php) to include @vite with resources:
 ```html
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -78,9 +77,80 @@ export default defineConfig({
 </body>
 </html>
 ```
-- run `composer install`
+9. Create the Flight model:
+`php artisan make:model Flight`
 
-9. Build your assets:
+NOTE: using the -m flag to make a migration
+- we already have a table schema we will be using but if you don't...
+The command `php artisan make:model Flight -m` creates:
+1. Model class `Flight.php` in `app/Models`
+2. Migration file in `database/migrations` (the `-m` flag)
+
+Example output:
+```php
+<?php 
+# app/Models/Flight.php
+class Flight extends Model
+{
+    // add the following
+
+    protected $fillable = [
+        'flight_number',
+        'airline',
+        'status',
+        'scheduled_time',
+        'origin',         
+        'destination',
+        'terminal',
+        'gate'
+    ];
+
+    public $timestamps = false;
+}
+```
+----------------------------------
+
+10. Make the Flight Controller
+`php artisan make:controller FlightController`
+
+- in the flight controller make sure to use the Flight Model
+- assign the variables you want to use in your app from the sql methods you want to use
+-------------
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Flight;
+use Illuminate\Http\Request;
+
+class FlightController extends Controller
+{
+    public function index()
+    {
+        $arriving_flights = Flight::where('status', 'arriving')
+            ->orderBy('scheduled_time')
+            ->get();
+        
+        $departing_flights = Flight::where('status', 'departing')
+            ->orderBy('scheduled_time')
+            ->get();
+
+        return view('flights.index', compact('arriving_flights', 'departing_flights'));
+    }
+}
+```
+-------------
+11. Copy the example .env.example file
+`cp .env.example .env`
+
+12. Modify your .env file to utilize the intended database with credentials
+- optional: import a sql file into your local mysql 
+`mysql -u <USER> -p < db_filename.sql`
+
+13. Run `php artisan:key generate` to assign a key to your app
+
+14. Build your assets:
 ```bash
 # For development
 npm run dev
@@ -88,14 +158,33 @@ npm run dev
 # For production
 npm run build
 ```
+15. Make a `flights/` directory in `resources/views`
 
-10. Start your Laravel development server:
+16. create an index.blade.php file in `resources/views/flights/`
+
+17. to see the blade working put the minum following code
+```php
+@extends('layouts.app')
+
+@section('title', 'Flights')
+
+@section('content')
+  <div>
+            @foreach($arriving_flights as $flight)
+                    <p>{{ $flight->flight_number }}</p>
+            @endforeach
+  </div>
+@endsection
+```
+18. Start your Laravel development server:
 ```bash
 php artisan serve
 ```
 
 To test if everything is working:
+19. Navigate to localhost:8000/flights
 
+NOTE: Other things to test
 1. Create a test blade file (e.g., resources/views/welcome.blade.php):
 ```php
 @extends('layouts.app')
@@ -120,11 +209,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 ```
-`cp .env.example .env`
-`DB_CONNECTION=none`
-`php artisan key:generate`
-
-
 Common troubleshooting steps if styles aren't appearing:
 - Make sure npm run dev is running in the background
 - Clear your browser cache
@@ -133,3 +217,41 @@ Common troubleshooting steps if styles aren't appearing:
 - Ensure all paths in tailwind.config.js content array are correct
 - Check that all configuration files are in the root directory of your project
 
+
+- OPTIONAL
+- After adding your migration details, run the migration:
+```bash
+php artisan migrate
+```
+- If necessary and you need to seed the database with the test data, create a seeder:
+```bash
+php artisan make:seeder FlightSeeder
+```
+
+- If necessary: run the seeder:
+```bash
+php artisan db:seed
+```
+
+Optional but helpful commands:
+- If you need to rollback and re-run migrations:
+```bash
+php artisan migrate:refresh
+```
+
+- If you want to clear cache after making changes:
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan view:clear
+```
+
+- To check your routes are registered correctly:
+```bash
+php artisan route:list
+```
+
+- in another terminal
+```bash
+php artisan serve
+```
